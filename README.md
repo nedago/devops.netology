@@ -1,11 +1,11 @@
 ## 1.1 Введение в DevOps - Денис Поляков
 
 ## Задание №1
-- Terraform: ![Терраформ](img/terraform.png)
+- Terraform: ![Терраформ](img/Terraform.png)
 - Bash: ![bahs](img/bash.png)
 - Markdown: ![markdown](img/markdown.png)
-- Yaml: ![Yaml](img/yaml.png)
-- Jsonnet: ![Jsonnet](img/jsonnet.png)
+- Yaml: ![Yaml](img/Yaml.png)
+- Jsonnet: ![Jsonnet](img/Jsonnet.png)
 
 ## Задание №2 - Описание жизненного цикла задачи (разработки нового функционала)
 
