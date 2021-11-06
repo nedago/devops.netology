@@ -1,5 +1,5 @@
 ##Домашнее задание к занятию «2.4. Инструменты Git» - Денис Поляков
-####1. Найдите полный хеш и комментарий коммита, хеш которого начинается на `aefea`.
+1. Найдите полный хеш и комментарий коммита, хеш которого начинается на `aefea`.
 ```
 %git show -s aefea  
 commit aefead2207ef7e2aa5dc81a34aedf0cad4c32545  
@@ -8,12 +8,12 @@ Date:   Thu Jun 18 10:29:58 2020 -0400
 
    Update CHANGELOG.md
 ```
-####2. Какому тегу соответствует коммит 85024d3? 
+2. Какому тегу соответствует коммит 85024d3? 
 ```
 % git show -s --oneline 85024d3  
 85024d310 (tag: v0.12.23) v0.12.23
 ```
-####3. Сколько родителей у коммита b8d720? Напишите их хеши.
+3. Сколько родителей у коммита b8d720? Напишите их хеши.
 ```
 %git log --pretty=format:'%h %s' --graph b8d720  
 *   b8d720f83 Merge pull request #23916 from hashicorp/cgriggs01-stable  
@@ -37,7 +37,7 @@ Date:   Mon Jan 13 13:19:09 2020 -0800
    [cherry-pick]add checkpoint links
 ```
 
-####4. Перечислите хеши и комментарии всех коммитов которые были сделаны между тегами v0.12.23 и v0.12.24.
+4. Перечислите хеши и комментарии всех коммитов которые были сделаны между тегами v0.12.23 и v0.12.24.
 ```
 % git log --oneline v0.12.23..v0.12.24  
 33ff1c03b (tag: v0.12.24) v0.12.24  
@@ -51,7 +51,7 @@ d5f9411f5 command: Fix bug when using terraform login on Windows
 dd01a3507 Update CHANGELOG.md  
 225466bc3 Cleanup after v0.12.23 release  
 ```
-####5. Найдите коммит в котором была создана функция func providerSource, ее определение в коде выглядит так func providerSource(...) (вместо троеточего перечислены аргументы).
+5. Найдите коммит в котором была создана функция func providerSource, ее определение в коде выглядит так func providerSource(...) (вместо троеточего перечислены аргументы).
 ```
 %git grep --break --heading -n 'func providerSource('  
 provider_source.go  
@@ -64,7 +64,7 @@ provider_source.go
 ```
 Ответ: **8c928e835** причем, если бы запрос был бы без `(`, а именно `func providerSource` в этом репо было бы уже два совпадения и два коммита при поиске. В этом случае пршлось бы или детализировать строку поиска, или при помощи `git show хэш` перебирать и визуально оценивать изменения в файлах.
 
-####6. Найдите все коммиты в которых была изменена функция globalPluginDirs.  
+6. Найдите все коммиты в которых была изменена функция globalPluginDirs.  
 Для поиска всех коммитов с этой функцией ищу в каком файле определялась функция: 
 ```
 %git grep --break --heading -np 'globalPluginDirs'  
@@ -97,7 +97,7 @@ plugins.go
 66ebff90c move some more plugin search path logic to command    
 8364383c3 Push plugin discovery down into command package    
 ```
-####7.  Кто автор функции `synchronizedWriters`?
+7.  Кто автор функции `synchronizedWriters`?
 Смотрю в каких коммитах встречается функция:
 ```
 %git log -S'synchronizedWriters'  --oneline  
@@ -114,4 +114,3 @@ fd4f7eb0b remove prefixed io
 +func synchronizedWriters(targets ...io.Writer) []io.Writer {`  
 ```
 Автор этого 5ac311e2a коммита  **Martin Atkins <mart@degeneration.co.uk>**
-
