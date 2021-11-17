@@ -150,8 +150,8 @@ vagrant@vagrant:~$
 Устанавливаю `reptyr`, проверяю работу пытаясь вытянуть top в мою консоль.  
 ```  
 sudo apt-get install -y reptyr  
-vagrant@vagrant:~$ reptyr 2586  
-Unable to attach to pid 2586: Operation not permitted  
+vagrant@vagrant:~$ reptyr 3669  
+Unable to attach to pid 3669: Operation not permitted  
 The kernel denied permission while attaching. If your uid matches  
 the target's, check the value of /proc/sys/kernel/yama/ptrace_scope.  
 For more information, see /etc/sysctl.d/10-ptrace.conf  
@@ -167,7 +167,7 @@ vagrant@vagrant:~$screen
 vagrant@vagrant:~$  
 vagrant@vagrant:~$ ps aux | grep top  
 vagrant     3669  0.0  0.4  11820  4072 pts/1    S+   09:31   0:00 top  
-vagrant     3671  0.0  0.0   9032   740 pts/0    S+   09:31   0:00 grep --color=auto top  
+vagrant     3678  0.0  0.0   9032   740 pts/0    S+   09:31   0:00 grep --color=auto top  
 vagrant@vagrant:~$ reptyr 3669  
 ```
 Получаю вывод рабочий программы в моем окне screen. Можно выходить из него и отключаться от ssh. Программа останется работать в фоне. При следующем ssh подключении: Смотрю запущенные окна `screen -ls`. Подключаюсь к тому где была запущенна программ: `screen -r 3194`. Вижу работу этой программы.
