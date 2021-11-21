@@ -1,0 +1,16 @@
+[Unit]
+Description=Node Exporter
+After=syslog.target
+After=network.target
+
+[Service]
+User=node_exporter
+Group=node_exporter
+Type=simple
+#ExecStart=/usr/local/bin/node_exporter --collector.nfs --collector.nfsd
+ExecStart=/bin/sh -c '/usr/local/bin/node_exporter $OPTIONS_NODE_EXPORTER'
+
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
