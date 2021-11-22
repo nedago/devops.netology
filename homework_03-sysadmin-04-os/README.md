@@ -23,7 +23,7 @@ ExecStart=/usr/sbin/node_exporter --collector.textfile.directory /var/lib/node_e
 [Install]
 WantedBy=multi-user.target
 ```
-- Создаю путой файл для опций collector `/var/lib/node_exporter/textfile_collector` и назначаю ему права
+- Создаю пуcтой файл для опций collector `/var/lib/node_exporter/textfile_collector` и назначаю ему права
 ```
 root@front:/var/lib/node_exporter# useradd node_exporter
 root@front:/var/lib/node_exporter# chown node_exporter:node_exporter textfile_collector
@@ -68,6 +68,7 @@ Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.353Z caller=tl
 **Disk:** node_filesystem_free_bytes  
 **Network:** node_network_receive_bytes_total ;node_network_transmit_bytes_total  
 - Примеры для постороения графиков в Grafana с использованием этих метрик:
+- Grafana: ![Grafana](img/homework_03_02.png)
 ```
 100 - (avg(rate(node_cpu_seconds_total{instance=~"$node",mode="idle"}[$interval])) * 100)
 avg(rate(node_cpu_seconds_total{instance=~"$node",mode="iowait"}[$interval])) * 100
