@@ -68,7 +68,8 @@ Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.353Z caller=tl
 **Disk:** node_filesystem_free_bytes  
 **Network:** node_network_receive_bytes_total ;node_network_transmit_bytes_total  
 - Примеры для постороения графиков в Grafana с использованием этих метрик:  
-CPU, RAM, Disk: ![Grafana1](img/homework_03_02.png)  Network: ![Grafana2](img/homework_03_02_1.png)  
+CPU, RAM, Disk: ![Grafana1](img/homework_03_02.png)   
+Network: ![Grafana2](img/homework_03_02_1.png)  
 ```
 100 - (avg(rate(node_cpu_seconds_total{instance=~"$node",mode="idle"}[$interval])) * 100)
 avg(rate(node_cpu_seconds_total{instance=~"$node",mode="iowait"}[$interval])) * 100
