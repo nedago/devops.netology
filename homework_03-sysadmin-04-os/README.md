@@ -8,42 +8,29 @@
     * удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
 
 [Статья: "Systemd за пять минут"](https://habr.com/ru/company/southbridge/blog/255845/)   
+[Руководство по настройке node_exporter](https://github.com/prometheus/node_exporter/tree/master/examples/systemd)  
 Помещаю юнит в `/etc/systemd/system`
 ```
 [Unit]
 Description=Node Exporter
-After=syslog.target
-After=network.target
 
 [Service]
 User=node_exporter
-Group=node_exporter
-Type=simple
-#ExecStart=/usr/local/bin/node_exporter --collector.nfs --collector.nfsd
-ExecStart=/bin/sh -c '/usr/local/bin/node_exporter $OPTIONS_NODE_EXPORTER'
-
-Restart=always
+ExecStart=/usr/sbin/node_exporter --collector.textfile.directory /var/lib/node_exporter/textfile_collector
+#ExecStart=/usr/sbin/node_exporter $OPTIONS
+#OPTIONS="--collector.textfile.directory /var/lib/node_exporter/textfile_collector"
 
 [Install]
 WantedBy=multi-user.target
 ```
-
+Создаю путой файл для опций collector `/var/lib/node_exporter/textfile_collector` и назначаю ему права
+```
+root@front:/var/lib/node_exporter# useradd node_exporter
+root@front:/var/lib/node_exporter# chown node_exporter:node_exporter textfile_collector
+```
 Перегружаю systemd:
 ```
-vagrant@front:/etc/systemd/system$ systemctl daemon-reload
-==== AUTHENTICATING FOR org.freedesktop.systemd1.reload-daemon ===
-Authentication is required to reload the systemd state.
-Authenticating as: vagrant,,, (vagrant)
-Password:
-==== AUTHENTICATION COMPLETE ===
-```
-Проверяю:
-```
-vagrant@front:/etc/systemd/system$ systemctl status node_exporter
-● node_exporter.service - MyUnit_node_exporter
-     Loaded: loaded (/etc/systemd/system/node_exporter.service; disabled; vendor preset: enabled)
-     Active: inactive (dead)`
-Включить/выключить автозапуск юнита при загрузке системы:  
+vagrant@front:/usr/local/bin$ sudo systemctl daemon-reload
 ```
 Помещаю юнит в автозагрузку:
 ```
@@ -52,39 +39,38 @@ Created symlink /etc/systemd/system/multi-user.target.wants/node_exporter.servic
 ```
 Смотрю корректность работы:
 ```
-vagrant@front:/etc/systemd/system$ systemctl status node_exporter
-● node_exporter.service - MyUnit_node_exporter
+root@front:/var/lib/node_exporter# systemctl status node_exporter
+● node_exporter.service - Node Exporter
      Loaded: loaded (/etc/systemd/system/node_exporter.service; enabled; vendor preset: enabled)
-     Active: active (running) since Sun 2021-11-21 09:24:36 UTC; 1h 54min ago
-   Main PID: 1543 (node_exporter)
+     Active: active (running) since Mon 2021-11-22 09:18:08 UTC; 2s ago
+   Main PID: 1957 (node_exporter)
       Tasks: 4 (limit: 1073)
-     Memory: 2.4M
+     Memory: 2.5M
      CGroup: /system.slice/node_exporter.service
-             └─1543 /usr/local/bin/node_exporter
+             └─1957 /usr/sbin/node_exporter --collector.textfile.directory /var/lib/node_exporter/textfile_collector
 
-Nov 21 09:24:36 front node_exporter[1543]: ts=2021-11-21T09:24:36.812Z caller=node_exporter.go:115 level=info collector=thermal_zone
-Nov 21 09:24:36 front node_exporter[1543]: ts=2021-11-21T09:24:36.812Z caller=node_exporter.go:115 level=info collector=time
-Nov 21 09:24:36 front node_exporter[1543]: ts=2021-11-21T09:24:36.812Z caller=node_exporter.go:115 level=info collector=timex
-Nov 21 09:24:36 front node_exporter[1543]: ts=2021-11-21T09:24:36.812Z caller=node_exporter.go:115 level=info collector=udp_queues
-Nov 21 09:24:36 front node_exporter[1543]: ts=2021-11-21T09:24:36.812Z caller=node_exporter.go:115 level=info collector=uname
-Nov 21 09:24:36 front node_exporter[1543]: ts=2021-11-21T09:24:36.812Z caller=node_exporter.go:115 level=info collector=vmstat
-Nov 21 09:24:36 front node_exporter[1543]: ts=2021-11-21T09:24:36.812Z caller=node_exporter.go:115 level=info collector=xfs
-Nov 21 09:24:36 front node_exporter[1543]: ts=2021-11-21T09:24:36.812Z caller=node_exporter.go:115 level=info collector=zfs
-Nov 21 09:24:36 front node_exporter[1543]: ts=2021-11-21T09:24:36.812Z caller=node_exporter.go:199 level=info msg="Listening on" address=:9100
-Nov 21 09:24:36 front node_exporter[1543]: ts=2021-11-21T09:24:36.815Z caller=tls_config.go:195 level=info msg="TLS is disabled." http2=false
-vagrant@front:/etc/systemd/system$
+Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.352Z caller=node_exporter.go:115 level=info collector=thermal_zone
+Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.352Z caller=node_exporter.go:115 level=info collector=time
+Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.352Z caller=node_exporter.go:115 level=info collector=timex
+Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.352Z caller=node_exporter.go:115 level=info collector=udp_queues
+Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.352Z caller=node_exporter.go:115 level=info collector=uname
+Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.352Z caller=node_exporter.go:115 level=info collector=vmstat
+Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.352Z caller=node_exporter.go:115 level=info collector=xfs
+Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.352Z caller=node_exporter.go:115 level=info collector=zfs
+Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.352Z caller=node_exporter.go:199 level=info msg="Listening on" address=:9100
+Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.353Z caller=tls_config.go:195 level=info msg="TLS is disabled." http2=false
 ```
 ###  Задание 2
 Ознакомьтесь с опциями node_exporter и выводом `/metrics` по-умолчанию. Приведите несколько опций, которые вы бы выбрали для базового мониторинга хоста по CPU, памяти, диску и сети.
 Примеры для постороения графиrов в Grafana:
 ```
-**CPU: node_cpu_seconds_total**
+CPU: node_cpu_seconds_total
 100 - (avg(rate(node_cpu_seconds_total{instance=~"$node",mode="idle"}[$interval])) * 100)
-**RAM: node_memory_MemAvailable_bytes**
+RAM: node_memory_MemAvailable_bytes
 avg(rate(node_cpu_seconds_total{instance=~"$node",mode="iowait"}[$interval])) * 100
-**Disk: node_filesystem_free_bytes**
+Disk: node_filesystem_free_bytes
 (node_filesystem_size_bytes{instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}-node_filesystem_free_bytes{instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"})*100 /(node_filesystem_avail_bytes {instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}+(node_filesystem_size_bytes{instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}-node_filesystem_free_bytes{instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}))
-**Network: node_network_receive_bytes_total ;node_network_transmit_bytes_total**
+Network: node_network_receive_bytes_total ;node_network_transmit_bytes_total
 (1 - ((node_memory_SwapFree_bytes{instance=~"$node"} + 1)/ (node_memory_SwapTotal_bytes{instance=~"$node"} + 1))) * 100
 ```
 ### Задание 3
@@ -128,33 +114,7 @@ vagrant@front:~$
 Запустите любой долгоживущий процесс (не `ls`, который отработает мгновенно, а, например, `sleep 1h`) в отдельном неймспейсе процессов; покажите, что ваш процесс работает под PID 1 через `nsenter`. Для простоты работайте в данном задании под root (`sudo -i`). Под обычным пользователем требуются дополнительные опции (`--map-root-user`) и т.д.
 
 
+### Задание 7
+Найдите информацию о том, что такое `:(){ :|:& };:`. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (**это важно, поведение в других ОС не проверялось**). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. Вызов `dmesg` расскажет, какой механизм помог автоматической стабилизации. Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
 
-12. Найдите информацию о том, что такое `:(){ :|:& };:`. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (**это важно, поведение в других ОС не проверялось**). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. Вызов `dmesg` расскажет, какой механизм помог автоматической стабилизации. Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
 
- 
- ---
-
-## Как сдавать задания
-
-Обязательными к выполнению являются задачи без указания звездочки. Их выполнение необходимо для получения зачета и диплома о профессиональной переподготовке.
-
-Задачи со звездочкой (*) являются дополнительными задачами и/или задачами повышенной сложности. Они не являются обязательными к выполнению, но помогут вам глубже понять тему.
-
-Домашнее задание выполните в файле readme.md в github репозитории. В личном кабинете отправьте на проверку ссылку на .md-файл в вашем репозитории.
-
-Также вы можете выполнить задание в [Google Docs](https://docs.google.com/document/u/0/?tgif=d) и отправить в личном кабинете на проверку ссылку на ваш документ.
-Название файла Google Docs должно содержать номер лекции и фамилию студента. Пример названия: "1.1. Введение в DevOps — Сусанна Алиева".
-
-Если необходимо прикрепить дополнительные ссылки, просто добавьте их в свой Google Docs.
-
-Перед тем как выслать ссылку, убедитесь, что ее содержимое не является приватным (открыто на комментирование всем, у кого есть ссылка), иначе преподаватель не сможет проверить работу. Чтобы это проверить, откройте ссылку в браузере в режиме инкогнито.
-
-[Как предоставить доступ к файлам и папкам на Google Диске](https://support.google.com/docs/answer/2494822?hl=ru&co=GENIE.Platform%3DDesktop)
-
-[Как запустить chrome в режиме инкогнито ](https://support.google.com/chrome/answer/95464?co=GENIE.Platform%3DDesktop&hl=ru)
-
-[Как запустить  Safari в режиме инкогнито ](https://support.apple.com/ru-ru/guide/safari/ibrw1069/mac)
-
-Любые вопросы по решению задач задавайте в чате Slack.
-
----
