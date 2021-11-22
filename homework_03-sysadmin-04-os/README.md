@@ -1,15 +1,16 @@
 ## Домашнее задание к занятию "3.4. Операционные системы, лекция 2" - Денис Поляков
 
-### Задание №1
+### Задание 1
 На лекции мы познакомились с [node_exporter](https://github.com/prometheus/node_exporter/releases). В демонстрации его исполняемый файл запускался в background. Этого достаточно для демо, но не для настоящей production-системы, где процессы должны находиться под внешним управлением. Используя знания из лекции по systemd, создайте самостоятельно простой [unit-файл](https://www.freedesktop.org/software/systemd/man/systemd.service.html) для node_exporter:
 
     * поместите его в автозагрузку,
     * предусмотрите возможность добавления опций к запускаемому процессу через внешний файл (посмотрите, например, на `systemctl cat cron`),
     * удостоверьтесь, что с помощью systemctl процесс корректно стартует, завершается, а после перезагрузки автоматически поднимается.
 
+**Ответ:**  
 [Статья: "Systemd за пять минут"](https://habr.com/ru/company/southbridge/blog/255845/)   
 [Руководство по настройке node_exporter](https://github.com/prometheus/node_exporter/tree/master/examples/systemd)  
-- Помещаю юнит в `/etc/systemd/system`
+1. Помещаю юнит в `/etc/systemd/system`
 ```
 [Unit]
 Description=Node Exporter
@@ -23,21 +24,21 @@ ExecStart=/usr/sbin/node_exporter --collector.textfile.directory /var/lib/node_e
 [Install]
 WantedBy=multi-user.target
 ```
-- Создаю пуcтой файл для опций collector `/var/lib/node_exporter/textfile_collector` и назначаю ему права
+2. Создаю пуcтой файл для опций collector `/var/lib/node_exporter/textfile_collector` и назначаю ему права
 ```
 root@front:/var/lib/node_exporter# useradd node_exporter
 root@front:/var/lib/node_exporter# chown node_exporter:node_exporter textfile_collector
 ```
-- Перегружаю systemd:
+3. Перегружаю systemd:
 ```
 vagrant@front:/usr/local/bin$ sudo systemctl daemon-reload
 ```
-- Помещаю юнит в автозагрузку:
+4. Помещаю юнит в автозагрузку:
 ```
 vagrant@front:/etc/systemd/system$ sudo systemctl enable node_exporter
 Created symlink /etc/systemd/system/multi-user.target.wants/node_exporter.service → /etc/systemd/system/node_exporter.service.
 ```
-- Смотрю корректность работы:
+5. Смотрю корректность работы:
 ```
 root@front:/var/lib/node_exporter# systemctl status node_exporter
 ● node_exporter.service - Node Exporter
@@ -62,7 +63,7 @@ Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.353Z caller=tl
 ```
 ###  Задание 2
 - Ознакомьтесь с опциями node_exporter и выводом `/metrics` по-умолчанию. Приведите несколько опций, которые вы бы выбрали для базового мониторинга хоста по CPU, памяти, диску и сети.  
-
+**Ответ:**  
 **CPU:** node_cpu_seconds_total  
 **RAM:** node_memory_MemAvailable_bytes  
 **Disk:** node_filesystem_free_bytes  
@@ -88,10 +89,13 @@ esystem_avail_bytes {instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount
 
     После успешной перезагрузки в браузере *на своем ПК* (не в виртуальной машине) вы должны суметь зайти на `localhost:19999`. Ознакомьтесь с метриками, которые по умолчанию собираются Netdata и с комментариями, которые даны к этим метрикам.
 
+**Ответ:**
 - Netdata: ![Netdata](img/homework_03_01.png)
 
 ### Задание 4
-Можно ли по выводу `dmesg` понять, осознает ли ОС, что загружена не на настоящем оборудовании, а на системе виртуализации?  
+Можно ли по выводу `dmesg` понять, осознает ли ОС, что загружена не на настоящем оборудовании, а на системе виртуализации?      
+
+**Ответ:**  
 Да, можно:
 ```
 vagrant@front:~$ dmesg -T | grep "virt"
@@ -102,6 +106,8 @@ vagrant@front:~$ dmesg -T | grep "virt"
 ```
 ### Задание 5
 Как настроен sysctl `fs.nr_open` на системе по-умолчанию? Узнайте, что означает этот параметр. Какой другой существующий лимит не позволит достичь такого числа (`ulimit --help`)?
+
+**Ответ:**  
 ```
 vagrant@front:~$ /sbin/sysctl -n fs.nr_open
 1048576
@@ -123,6 +129,7 @@ vagrant@front:~$
 ### Задание 7
 Найдите информацию о том, что такое `:(){ :|:& };:`. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (**это важно, поведение в других ОС не проверялось**). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. Вызов `dmesg` расскажет, какой механизм помог автоматической стабилизации. Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
 
+**Ответ:**  
 >:(){ :|:& };:  
 >  
 >для понятности заменим : именем f и отформатируем код.  
@@ -134,3 +141,20 @@ vagrant@front:~$
 >  
 >таким образом это функция, которая параллельно пускает два своих экземпляра. Каждый пускает ещё по два и т.д.   
 >При отсутствии лимита на число процессов машина быстро исчерпывает физическую память и уходит в своп.  
+
+Вывод `dmesg -T` после того как система стабилизировалась:
+```
+[Mon Nov 22 09:58:01 2021] cgroup: fork rejected by pids controller in /user.slice/user-1000.slice/session-1.scope
+```
+Механизм [cgroup](https://habr.com/ru/company/selectel/blog/303190/)
+Ограничение на число (5 к примеру) запущенных процессов для этой группы пользователя можно задать так:
+```
+root@front:# echo 5 > /sys/fs/cgroup/pids/user.slice/user-1000.slice/session-1.scope/pids.max
+root@front:# :(){ :|:& };:
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: retry: Resource temporarily unavailable
+bash: fork: Resource temporarily unavailable
+root@front:e#
+```
