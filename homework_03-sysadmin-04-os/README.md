@@ -9,7 +9,7 @@
 
 [Статья: "Systemd за пять минут"](https://habr.com/ru/company/southbridge/blog/255845/)   
 [Руководство по настройке node_exporter](https://github.com/prometheus/node_exporter/tree/master/examples/systemd)  
-Помещаю юнит в `/etc/systemd/system`
+- Помещаю юнит в `/etc/systemd/system`
 ```
 [Unit]
 Description=Node Exporter
@@ -23,21 +23,21 @@ ExecStart=/usr/sbin/node_exporter --collector.textfile.directory /var/lib/node_e
 [Install]
 WantedBy=multi-user.target
 ```
-Создаю путой файл для опций collector `/var/lib/node_exporter/textfile_collector` и назначаю ему права
+- Создаю путой файл для опций collector `/var/lib/node_exporter/textfile_collector` и назначаю ему права
 ```
 root@front:/var/lib/node_exporter# useradd node_exporter
 root@front:/var/lib/node_exporter# chown node_exporter:node_exporter textfile_collector
 ```
-Перегружаю systemd:
+- Перегружаю systemd:
 ```
 vagrant@front:/usr/local/bin$ sudo systemctl daemon-reload
 ```
-Помещаю юнит в автозагрузку:
+- Помещаю юнит в автозагрузку:
 ```
 vagrant@front:/etc/systemd/system$ sudo systemctl enable node_exporter
 Created symlink /etc/systemd/system/multi-user.target.wants/node_exporter.service → /etc/systemd/system/node_exporter.service.
 ```
-Смотрю корректность работы:
+- Смотрю корректность работы:
 ```
 root@front:/var/lib/node_exporter# systemctl status node_exporter
 ● node_exporter.service - Node Exporter
@@ -61,18 +61,20 @@ Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.352Z caller=no
 Nov 22 09:18:08 front node_exporter[1957]: ts=2021-11-22T09:18:08.353Z caller=tls_config.go:195 level=info msg="TLS is disabled." http2=false
 ```
 ###  Задание 2
-Ознакомьтесь с опциями node_exporter и выводом `/metrics` по-умолчанию. Приведите несколько опций, которые вы бы выбрали для базового мониторинга хоста по CPU, памяти, диску и сети.
-Примеры для постороения графиrов в Grafana:
+- Ознакомьтесь с опциями node_exporter и выводом `/metrics` по-умолчанию. Приведите несколько опций, которые вы бы выбрали для базового мониторинга хоста по CPU, памяти, диску и сети.  
+
+**CPU:** node_cpu_seconds_total  
+**RAM:** node_memory_MemAvailable_bytes  
+**Disk:** node_filesystem_free_bytes  
+**Network:** node_network_receive_bytes_total ;node_network_transmit_bytes_total  
+- Примеры для постороения графиков в Grafana с использованием этих метрик:
 ```
-CPU: node_cpu_seconds_total
 100 - (avg(rate(node_cpu_seconds_total{instance=~"$node",mode="idle"}[$interval])) * 100)
-RAM: node_memory_MemAvailable_bytes
 avg(rate(node_cpu_seconds_total{instance=~"$node",mode="iowait"}[$interval])) * 100
-Disk: node_filesystem_free_bytes
-(node_filesystem_size_bytes{instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}-node_filesystem_free_bytes{instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"})*100 /(node_filesystem_avail_bytes {instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}+(node_filesystem_size_bytes{instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}-node_filesystem_free_bytes{instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}))
-Network: node_network_receive_bytes_total ;node_network_transmit_bytes_total
+esystem_avail_bytes {instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}+(node_filesystem_size_bytes{instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}-node_filesystem_free_bytes{instance=~'$node',fstype=~"ext.*|xfs",mountpoint="$maxmount"}))
 (1 - ((node_memory_SwapFree_bytes{instance=~"$node"} + 1)/ (node_memory_SwapTotal_bytes{instance=~"$node"} + 1))) * 100
 ```
+
 ### Задание 3
 Установите в свою виртуальную машину [Netdata](https://github.com/netdata/netdata). Воспользуйтесь [готовыми пакетами](https://packagecloud.io/netdata/netdata/install) для установки (`sudo apt install -y netdata`). После успешной установки:
     * в конфигурационном файле `/etc/netdata/netdata.conf` в секции [web] замените значение с localhost на `bind to = 0.0.0.0`,
@@ -87,7 +89,8 @@ Network: node_network_receive_bytes_total ;node_network_transmit_bytes_total
 - Netdata: ![Netdata](img/homework_03_01.png)
 
 ### Задание 4
-Можно ли по выводу `dmesg` понять, осознает ли ОС, что загружена не на настоящем оборудовании, а на системе виртуализации?
+Можно ли по выводу `dmesg` понять, осознает ли ОС, что загружена не на настоящем оборудовании, а на системе виртуализации?  
+Да, можно:
 ```
 vagrant@front:~$ dmesg -T | grep "virt"
 [Sun Nov 21 12:43:42 2021] CPU MTRRs all blank - virtualized system.
@@ -101,7 +104,8 @@ vagrant@front:~$ dmesg -T | grep "virt"
 vagrant@front:~$ /sbin/sysctl -n fs.nr_open
 1048576
 ```
-fs.nr_open - системное ограничение кол-ва возможных открытых файлов. Так же можно проверить командой ulimit -aH (жесткие огранияения)
+fs.nr_open - системное ограничение кол-ва возможных открытых файлов. 
+Так же можно проверить командой ulimit:
 ulimit -aH или ulimit -aS (жесткие или мягкие ограничения для shell)
 ```
 vagrant@front:~$ ulimit -aS | grep "open file"
@@ -117,4 +121,14 @@ vagrant@front:~$
 ### Задание 7
 Найдите информацию о том, что такое `:(){ :|:& };:`. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (**это важно, поведение в других ОС не проверялось**). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. Вызов `dmesg` расскажет, какой механизм помог автоматической стабилизации. Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
 
-
+>:(){ :|:& };:  
+>  
+>для понятности заменим : именем f и отформатируем код.  
+>  
+>f() {  
+>  f | f &  
+>}  
+>f  
+>  
+>таким образом это функция, которая параллельно пускает два своих экземпляра. Каждый пускает ещё по два и т.д.   
+>При отсутствии лимита на число процессов машина быстро исчерпывает физическую память и уходит в своп.  
