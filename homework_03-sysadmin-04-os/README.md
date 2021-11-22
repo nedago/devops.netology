@@ -125,6 +125,20 @@ vagrant@front:~$
 ### Задание 6
 Запустите любой долгоживущий процесс (не `ls`, который отработает мгновенно, а, например, `sleep 1h`) в отдельном неймспейсе процессов; покажите, что ваш процесс работает под PID 1 через `nsenter`. Для простоты работайте в данном задании под root (`sudo -i`). Под обычным пользователем требуются дополнительные опции (`--map-root-user`) и т.д.
 
+**Ответ:** 
+```
+root@front:/# unshare --mount-proc --fork --pid sleep 1h &
+[1] 17364
+root@front:/# ps aux | grep sleep
+root       17364  0.0  0.0   8080   592 pts/0    S    12:57   0:00 unshare --mount-proc --fork --pid sleep 1h
+root       17365  0.0  0.0   8076   592 pts/0    S    12:57   0:00 sleep 1h
+root       17367  0.0  0.0   8900   736 pts/0    S+   12:57   0:00 grep --color=auto sleep
+root@front:/# nsenter --target 17365 --pid --mount
+root@front:/# ps aux | grep sleep
+root           1  0.0  0.0   8076   592 pts/0    S    12:57   0:00 sleep 1h
+root          12  0.0  0.0   8900   736 pts/0    S+   12:58   0:00 grep --color=auto sleep
+root@front:/#
+```
 
 ### Задание 7
 Найдите информацию о том, что такое `:(){ :|:& };:`. Запустите эту команду в своей виртуальной машине Vagrant с Ubuntu 20.04 (**это важно, поведение в других ОС не проверялось**). Некоторое время все будет "плохо", после чего (минуты) – ОС должна стабилизироваться. Вызов `dmesg` расскажет, какой механизм помог автоматической стабилизации. Как настроен этот механизм по-умолчанию, и как изменить число процессов, которое можно создать в сессии?
@@ -146,7 +160,7 @@ vagrant@front:~$
 ```
 [Mon Nov 22 09:58:01 2021] cgroup: fork rejected by pids controller in /user.slice/user-1000.slice/session-1.scope
 ```
-Механизм [cgroup](https://habr.com/ru/company/selectel/blog/303190/)
+Механизм [cgroup](https://habr.com/ru/company/selectel/blog/303190/)  
 Ограничение на число (5 к примеру) запущенных процессов для этой группы пользователя можно задать так:
 ```
 root@front:# echo 5 > /sys/fs/cgroup/pids/user.slice/user-1000.slice/session-1.scope/pids.max
@@ -156,5 +170,5 @@ bash: fork: retry: Resource temporarily unavailable
 bash: fork: retry: Resource temporarily unavailable
 bash: fork: retry: Resource temporarily unavailable
 bash: fork: Resource temporarily unavailable
-root@front:e#
+root@front:#
 ```
