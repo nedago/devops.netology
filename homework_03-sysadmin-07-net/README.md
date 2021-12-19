@@ -174,6 +174,9 @@ HostMax:   192.168.0.6          11000000.10101000.00000000.00000 110
 Broadcast: 192.168.0.7          11000000.10101000.00000000.00000 111
 Hosts/Net: 6                     Class C, Private Internet
 ```
+[Статья по расчету с примерами на листочке](https://corpadmin.pp.ua/blog/internet/post/162-raschet-setey-vruchnuyu)  
+
+
 Количесво доступных 29 подсетей  
 Если  в лоб прикинуть:  
 256/8=**32**  
